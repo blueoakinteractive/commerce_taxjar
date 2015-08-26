@@ -40,12 +40,41 @@ function commerce_taxjar_permission() {
  * @return bool|\TaxJar\Client
  */
 function commerce_taxjar_api() {
-  $api_key = variable_get('commerce_taxjar_api_key');
-  if (!empty($api_key)) {
-    $taxjar = TaxJar\Client::withApiKey($api_key);
+  $settings = variable_get('commerce_taxjar_settings');
+  if (!empty($settings['api_key'])) {
+    $taxjar = TaxJar\Client::withApiKey($settings['api_key']);
     if (!empty($taxjar)) {
       return $taxjar;
     }
   }
   return FALSE;
+}
+
+/**
+ * Returns an array of taxjar settings that should be saved.
+ */
+function commerce_taxjar_settings_fields() {
+  return array(
+    'api_key',
+    'default_tax_category',
+  );
+}
+
+/**
+ * Fetch the available TaxJar tax categories.
+ */
+function commerce_taxjar_categories_list() {
+  $categories = array();
+  $taxjar = commerce_taxjar_api();
+  if (!empty($taxjar)) {
+    $taxjar_categories = $taxjar->categories();
+    if (!empty($taxjar_categories->categories)) {
+      foreach ($taxjar_categories->categories as $taxjar_category) {
+        $tax_code = check_plain($taxjar_category->product_tax_code);
+        $tax_name = check_plain($taxjar_category->name);
+        $categories[$tax_code] = $tax_name;
+      }
+    }
+  }
+  return $categories;
 }
