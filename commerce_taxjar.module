@@ -34,3 +34,18 @@ function commerce_taxjar_permission() {
     ),
   );
 }
+
+/**
+ * Instantiates the TaxJar PHP component.
+ * @return bool|\TaxJar\Client
+ */
+function commerce_taxjar_api() {
+  $api_key = variable_get('commerce_taxjar_api_key');
+  if (!empty($api_key)) {
+    $taxjar = TaxJar\Client::withApiKey($api_key);
+    if (!empty($taxjar)) {
+      return $taxjar;
+    }
+  }
+  return FALSE;
+}
