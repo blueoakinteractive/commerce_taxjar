@@ -36,6 +36,64 @@ function commerce_taxjar_permission() {
 }
 
 /**
+ * Creates a field instance on the specified commerce_product bundle.
+ *
+ * @param $bundle
+ * @throws \FieldException
+ */
+function commerce_taxjar_create_field_instances($bundle, $default_value) {
+  field_cache_clear();
+  $field_name = 'product_taxjar_category';
+  $field = field_info_field($field_name);
+  $instance = field_info_instance('commerce_product', $field_name, $bundle);
+
+  if (empty($field)) {
+    $field = array(
+      'field_name' => $field_name,
+      'type' => 'list_text',
+      'cardinality' => 1,
+      'entity_types' => array('commerce_product'),
+      'translatable' => FALSE,
+      'locked' => FALSE,
+      'settings' => array(
+        'allowed_values' => commerce_taxjar_categories_list(),
+      ),
+    );
+    try {
+      $field = field_create_field($field);
+    } catch (FieldException $ex) {
+      watchdog('commerce_taxjar', 'Unable to create field base for @bundle due to @error', array(
+        '@bundle' => $bundle,
+        '@error' => $ex->getMessage()
+      ), WATCHDOG_WARNING);
+    }
+  }
+
+  if (empty($instance)) {
+    $instance = array(
+      'field_name' => $field_name,
+      'entity_type' => 'commerce_product',
+      'bundle' => $bundle,
+      'label' => t('TaxJar Category'),
+      'required' => TRUE,
+      'settings' => array(),
+      'default_value' => array(
+        array('value' => $default_value),
+      ),
+      'display' => array(),
+    );
+    try {
+      field_create_instance($instance);
+    } catch (FieldException $ex) {
+      watchdog('commerce_taxjar', 'Unable to create field instance for @bundle due to @error', array(
+        '@bundle' => $bundle,
+        '@error' => $ex->getMessage()
+      ), WATCHDOG_WARNING);
+    }
+  }
+}
+
+/**
  * Instantiates the TaxJar PHP component.
  * @return bool|\TaxJar\Client
  */
@@ -53,7 +111,7 @@ function commerce_taxjar_api() {
 /**
  * Returns an array of taxjar settings that should be saved.
  */
-function commerce_taxjar_settings_fields() {
+function commerce_taxjar_settings_values() {
   return array(
     'api_key',
     'default_tax_category',
@@ -64,7 +122,7 @@ function commerce_taxjar_settings_fields() {
  * Fetch the available TaxJar tax categories.
  */
 function commerce_taxjar_categories_list() {
-  $categories = array();
+  $categories = array(0 => t('None'));
   $taxjar = commerce_taxjar_api();
   if (!empty($taxjar)) {
     $taxjar_categories = $taxjar->categories();
