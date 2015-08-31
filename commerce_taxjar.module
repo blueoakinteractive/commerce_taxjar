@@ -115,7 +115,7 @@ function commerce_taxjar_create_field_instances($bundle, $default_value) {
 function commerce_taxjar_api() {
   $settings = variable_get('commerce_taxjar_settings');
   if (!empty($settings['api_key'])) {
-    $taxjar = TaxJar\Client::withApiKey($settings['api_key']);
+    $taxjar = CommerceTaxJar::withApiKey($settings['api_key']);
     if (!empty($taxjar)) {
       return $taxjar;
     }

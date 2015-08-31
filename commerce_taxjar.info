@@ -9,3 +9,5 @@ dependencies[] = commerce_product_pricing
 dependencies[] = entity
 dependencies[] = rules
 dependencies[] = composer_manager
+
+files[] = includes/commerce_taxjar.api.inc
