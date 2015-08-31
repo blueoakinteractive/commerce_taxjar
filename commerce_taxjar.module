@@ -36,6 +36,21 @@ function commerce_taxjar_permission() {
 }
 
 /**
+ * Implements hook_commerce_price_component_type_info().
+ */
+function commerce_taxjar_commerce_price_component_type_info() {
+  $components = array();
+
+  // Create a price component for sales tax calculated by TaxJar.
+  $components['taxjar_tax'] = array(
+    'title' => t('Sales tax'),
+    'display_title' => t('Tax'),
+    'weight' => 99,
+  );
+  return $components;
+}
+
+/**
  * Creates a field instance on the specified commerce_product bundle.
  *
  * @param $bundle
