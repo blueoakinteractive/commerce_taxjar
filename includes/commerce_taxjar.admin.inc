@@ -43,10 +43,10 @@ function commerce_taxjar_admin_settings_form($form, &$form_state) {
         . 'if the value is un-selected'),
     );
 
-    foreach (commerce_product_type_options_list() as $bundle) {
+    foreach (commerce_product_type_options_list() as $bundle => $name) {
       $form['default_tax_category'][$bundle] = array(
         '#type' => 'select',
-        '#title' => t('Default tax category for "@bundle" products', array('@bundle' => $bundle)),
+        '#title' => t('Default tax category for "@bundle" products', array('@bundle' => $name)),
         '#options' => commerce_taxjar_categories_list(),
         '#default_value' => !empty($settings['default_tax_category'][$bundle]) ? $settings['default_tax_category'][$bundle] : 0,
       );
