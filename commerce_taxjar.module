@@ -51,6 +51,38 @@ function commerce_taxjar_commerce_price_component_type_info() {
 }
 
 /**
+ * Impelements hook_module_implements_alter().
+ */
+function commerce_taxjar_module_implements_alter(&$implementations, $hook) {
+  // Move our hook_commerce_cart_order_refresh implementation to the end.
+  if ($hook == 'commerce_cart_order_refresh') {
+    if (!empty($implementations['commerce_taxjar'])) {
+      $implementation = $implementations['commerce_taxjar'];
+      unset($implementations['commerce_taxjar']);
+      $implementations['commerce_taxjar'] = $implementation;
+    }
+  }
+}
+
+/**
+ * Implements hook_commerce_cart_order_refresh().
+ */
+function commerce_taxjar_commerce_cart_order_refresh($order_wrapper) {
+  rules_invoke_event('commerce_taxjar_refresh_order', $order_wrapper);
+}
+
+/**
+ * Calculate tax for the order or fetch it from the cache.
+ *
+ * @param $order_wrapper
+ */
+function commerce_taxjar_calculate_tax($order_wrapper) {
+  $api = commerce_taxjar_api();
+  $api->setWrapper($order_wrapper);
+  $api->getTax();
+}
+
+  /**
  * Creates a field instance on the specified commerce_product bundle.
  *
  * @param $bundle
@@ -115,7 +147,7 @@ function commerce_taxjar_create_field_instances($bundle, $default_value) {
 function commerce_taxjar_api() {
   $settings = variable_get('commerce_taxjar_settings');
   if (!empty($settings['api_key'])) {
-    $taxjar = CommerceTaxJar::withApiKey($settings['api_key']);
+    $taxjar = CommerceTaxJar::withSettings($settings);
     if (!empty($taxjar)) {
       return $taxjar;
     }
